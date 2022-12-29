@@ -12,15 +12,21 @@ spring:
   application:
     name: apigateway-service
 
-#  cloud:
-#    gateway:
-#      routes:
-#        - id: first-service
-#          uri: http://192.168.20.12:8081/
-#          predicates:
-#            - Path=/first-service/**
-#
-#        - id: second-service
-#          uri: http://192.168.20.12:8082/
-#          predicates:
-#            - Path=/second-service/**
+  cloud:
+    gateway:
+      routes:
+        - id: first-service
+          uri: http://192.168.20.12:8081/
+          predicates:
+            - Path=/first-service/**
+          filters:
+            - AddRequestHeader=first-request, first-request-header2
+            - AddResponseHeader=first-response, first-response-header2
+
+        - id: second-service
+          uri: http://192.168.20.12:8082/
+          predicates:
+            - Path=/second-service/**
+          filters:
+            - AddRequestHeader=second-request, second-request-header2
+            - AddResponseHeader=second-response, second-response-header2
