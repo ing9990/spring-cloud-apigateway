@@ -1,6 +1,9 @@
 server:
   port: 8000
 
+jwt:
+  secret: aGVsbG93b3JsZA==
+
 eureka:
   client:
     register-with-eureka: true
@@ -22,14 +25,14 @@ spring:
             postLogger: true
       routes:
 
-      # catalog-service
+        # catalog-service
         # 상품정보기능을 맡을 Micro service.
         - id: catalog-service
           uri: lb://CATALOG-SERVICE
           predicates:
             - Path=/catalog-service/**
 
-      # order-service
+        # order-service
         # 주문기능을 맡을 Micro service.
 
         - id: order-service
@@ -37,8 +40,8 @@ spring:
           predicates:
             - Path=/order-service/**
 
-      # user-service
-        # 인증기능을 맡을 Micro service임 API Gateway에서 로드 밸런싱을 넘어갈 때 필터를 통해 약간의 정보를 수정할 것임.
+          # user-service
+          # 인증기능을 맡을 Micro service임 API Gateway에서 로드 밸런싱을 넘어갈 때 필터를 통해 약간의 정보를 수정할 것임.
           # Rewrite: {PATH}/user-service/** 요청을 {PATH}/**로 재정의함.
           # /user-service/ 라는 중간 값이 사라지고 {PATH}/users, {PATH}/login같이 변경 함
           # 변경하는 조건은 predicates에 써있는 그대로 주소와 메서드를 통해서 API를 특정할 수 있음.
@@ -71,3 +74,4 @@ spring:
           filters:
             - RemoveRequestHeader=Cookie
             - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+            - AuthorizationHeaderFilter # 로그인, 회원가입을 제외한 Get 요청은 인증 헤더를 거친다.
