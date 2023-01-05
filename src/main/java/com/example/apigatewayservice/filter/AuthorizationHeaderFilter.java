@@ -1,18 +1,18 @@
 package com.example.apigatewayservice.filter;
 
 import io.jsonwebtoken.Jwts;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.security.Key;
+import java.util.Base64;
 import java.util.Objects;
 
 @Component
@@ -35,9 +35,10 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
                 return onError(exchange, "no authorization header", HttpStatus.UNAUTHORIZED);
             }
 
-            var token = Objects.requireNonNull(request.getHeaders().get(HttpHeaders.AUTHORIZATION)).get(0);
+            var token = Objects.requireNonNull(request.getHeaders()
+                    .get(HttpHeaders.AUTHORIZATION)).get(0);
 
-            if (token.startsWith("Bearer ") || !isJwtValid(token)) {
+            if (!isJwtValid(token)) {
                 return onError(exchange, "not jwt token", HttpStatus.UNAUTHORIZED);
             }
 
@@ -45,25 +46,26 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
         };
     }
 
-    private boolean isJwtValid(String token) {
-        boolean value = true;
+    private boolean isJwtValid(String jwt) {
+        boolean returnValue = true;
 
         String subject = null;
 
         try {
             subject = Jwts.parser()
                     .setSigningKey(secret)
-                    .parseClaimsJws(token)
+                    .parseClaimsJws(jwt)
                     .getBody()
                     .getSubject();
-        } catch (Exception e) {
-            value = false;
+        } catch (Exception ex) {
+            returnValue = false;
         }
 
-        if (subject == null || subject.isEmpty())
-            value = false;
+        if (subject == null || subject.isEmpty()) {
+            returnValue = false;
+        }
 
-        return value;
+        return returnValue;
     }
 
     private Mono<Void> onError(ServerWebExchange exchange, String error, HttpStatus status) {
@@ -75,7 +77,7 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
         return response.setComplete();
     }
 
-    static class Config {
+    public static class Config {
 
     }
 }
