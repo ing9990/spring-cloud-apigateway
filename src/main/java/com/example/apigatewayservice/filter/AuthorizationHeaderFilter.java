@@ -11,8 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.security.Key;
-import java.util.Base64;
 import java.util.Objects;
 
 @Component
@@ -32,14 +30,14 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
             var request = exchange.getRequest();
 
             if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-                return onError(exchange, "no authorization header", HttpStatus.UNAUTHORIZED);
+                return onError(exchange, "no authorization header");
             }
 
             var token = Objects.requireNonNull(request.getHeaders()
                     .get(HttpHeaders.AUTHORIZATION)).get(0);
 
             if (!isJwtValid(token)) {
-                return onError(exchange, "not jwt token", HttpStatus.UNAUTHORIZED);
+                return onError(exchange, "not jwt token");
             }
 
             return chain.filter(exchange);
@@ -68,11 +66,10 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
         return returnValue;
     }
 
-    private Mono<Void> onError(ServerWebExchange exchange, String error, HttpStatus status) {
+    private Mono<Void> onError(ServerWebExchange exchange, String error) {
         var response = exchange.getResponse();
 
-        response.setStatusCode(status);
-        log.error(error);
+        response.setStatusCode(HttpStatus.UNAUTHORIZED);
 
         return response.setComplete();
     }
