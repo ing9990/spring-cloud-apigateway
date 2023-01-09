@@ -34,7 +34,7 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
             }
 
             var token = Objects.requireNonNull(request.getHeaders()
-                    .get(HttpHeaders.AUTHORIZATION)).get(0);
+                    .get(HttpHeaders.AUTHORIZATION)).get(0).substring(7);
 
             if (!isJwtValid(token)) {
                 return onError(exchange, "not jwt token");
