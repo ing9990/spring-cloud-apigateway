@@ -1,9 +1,6 @@
 server:
   port: 8000
 
-jwt:
-  secret: aGVsbG93b3JsZA==
-
 eureka:
   client:
     register-with-eureka: true
