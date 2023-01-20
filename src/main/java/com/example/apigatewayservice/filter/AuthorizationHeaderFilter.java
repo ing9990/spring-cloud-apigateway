@@ -17,7 +17,7 @@ import java.util.Objects;
 @Slf4j
 public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<AuthorizationHeaderFilter.Config> {
 
-    @Value("${jwt.secret}")
+    @Value("${token.secret}")
     private String secret;
 
     public AuthorizationHeaderFilter() {
@@ -34,9 +34,9 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
             }
 
             var token = Objects.requireNonNull(request.getHeaders()
-                    .get(HttpHeaders.AUTHORIZATION)).get(0).substring(7);
+                    .get(HttpHeaders.AUTHORIZATION)).get(0);
 
-            if (!isJwtValid(token)) {
+            if (!token.startsWith("Bearer ") || !isJwtValid(token.substring(7))) {
                 return onError(exchange, "not jwt token");
             }
 
@@ -56,6 +56,10 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
                     .getBody()
                     .getSubject();
         } catch (Exception ex) {
+
+            log.info(ex.getLocalizedMessage());
+            log.info(ex.getMessage());
+
             returnValue = false;
         }
 
